@@ -222,6 +222,7 @@
         }
         .score-details { text-align: left; background: var(--box-bg); padding: 25px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--border-color);}
         .score-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding: 12px 0; font-size: 16px;}
+        .solution-box { background: var(--box-bg); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--accent); text-align: left; line-height: 1.6;}
         
         .exam-table { width: 100%; border-collapse: collapse; margin: 15px 0; background-color: white; color: black;}
         .exam-table th, .exam-table td { border: 1px solid var(--primary); padding: 8px; text-align: center; }
@@ -265,7 +266,6 @@
             <button class="mode-btn" onclick="startExam('vact2026')">Đề Minh Họa V-ACT 2026</button>
             <button class="mode-btn" onclick="startExam('vact2025')">Đề Minh Họa V-ACT 2025</button>
             <button class="mode-btn" onclick="startExam('vact2024')">Đề Thi Mẫu ĐGNL 2024</button>
-
             <button class="mode-btn ai-btn" onclick="startExam('ai')">Tạo Đề V-ACT Bằng AI</button>
         </div>
     </div>
@@ -401,7 +401,7 @@
         function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
         // ====================================================================
-        // HÀM KHỞI ĐỘNG BÀI THI (ĐÃ CẬP NHẬT KẾT NỐI VỚI DATABASE.JS)
+        // HÀM KHỞI ĐỘNG BÀI THI - KẾT NỐI VỚI DATABASE.JS
         // ====================================================================
         async function startExam(type) {
             hideAllViews();
@@ -410,7 +410,6 @@
             userAnswers = []; 
             generateAnswerSheet(); 
 
-            // 1. TẠO ĐỀ BẰNG THUẬT TOÁN AI
             if (type === 'ai') {
                 document.getElementById('examContent').style.display = 'none';
                 document.getElementById('loadingScreen').style.display = 'block';
@@ -432,29 +431,26 @@
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('examContent').style.display = 'block';
                 MathJax.typesetPromise(); 
-            }
-            
-            // 2. LẤY ĐỀ TỪ CƠ SỞ DỮ LIỆU (DATABASE.JS)
-            else if (EXAM_DATABASE && EXAM_DATABASE[type]) {
+            } 
+            // NẾU TÌM THẤY DỮ LIỆU ĐỀ THI TỪ FILE DATABASE.JS
+            else if (typeof EXAM_DATABASE !== 'undefined' && EXAM_DATABASE[type]) {
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('examContent').style.display = 'block';
                 
                 let examData = EXAM_DATABASE[type];
                 
-                // Cập nhật tiêu đề bài thi
                 document.getElementById('workspaceTitle').innerText = "ĐANG TRONG: " + examData.title.toUpperCase();
-                
-                // Nạp nội dung HTML đề thi
                 document.getElementById('examContent').innerHTML = examData.htmlContent; 
                 
-                // Nạp mảng đáp án và giải thích
                 currentAnswerKey = {
                     answers: examData.answers,
                     explanations: examData.explanations
                 };
                 
-                // Biên dịch lại các công thức Toán học
                 MathJax.typesetPromise(); 
+            } else {
+                alert("Lỗi: Không tìm thấy dữ liệu đề thi. Vui lòng kiểm tra lại file database.js.");
+                goBackToMainMenu();
             }
         }
 
@@ -533,7 +529,7 @@
         }
 
         // =========================================================================
-        // THUẬT TOÁN TẠO CÂU HỎI AI DÀNH CHO NÚT "TẠO ĐỀ BẰNG AI"
+        // THUẬT TOÁN TẠO CÂU HỎI AI (DÀNH CHO NÚT TẠO ĐỀ AI)
         // =========================================================================
         function buildProceduralVACTExam() {
             let html = `
